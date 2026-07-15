@@ -147,6 +147,12 @@ app.get('/batch/:bookId', handle(async (req) => await scraper.batchDownload(req.
 
 app.get('/related/:bookId', handle(async (req) => await scraper.getRelatedDramas(req.params.bookId)));
 
-app.listen(PORT, () => {
-  console.log(`DramaBox API jalan di port ${PORT}`);
-});
+// Vercel serverless: jangan listen kalau di-import sebagai module (VERCEL env ada)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`DramaBox API jalan di port ${PORT}`);
+  });
+}
+
+module.exports = app;
+  
