@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>dramabox.api — docs & console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c0b;
+    --panel:#101413;
+    --panel-raised:#151a19;
+    --border:#202826;
+    --border-soft:#1a201f;
+    --text:#dce3e0;
+    --muted:#6e7c79;
+    --muted-dim:#4a5654;
+    --accent:#6bffb0;
+    --accent-dim:#2e5c46;
+    --accent-glow:rgba(107,255,176,0.15);
+    --warn:#ffb454;
+    --error:#ff5c7a;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0);
+    background-size: 24px 24px;
+    pointer-events:none;
+    z-index:0;
+  }
+  ::selection{ background:var(--accent-dim); color:var(--accent); }
+  a{ color:var(--accent); }
+  h1,h2,h3{
+    font-family:'Space Mono', monospace;
+    font-weight:700;
+    margin:0;
+    letter-spacing:0.02em;
+  }
+  button, input, select, textarea{ font-family:inherit; font-size:inherit; }
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-track{ background:var(--panel); }
+  ::-webkit-scrollbar-thumb{ background:var(--border); border-radius:4px; }
+
+  /* ── header ─────────────────────────────────────────────── */
+  header{
+    position:sticky; top:0; z-index:20;
+    background:rgba(10,12,11,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom:1px solid var(--border);
+    padding:14px 20px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .logo{
+    display:flex; align-items:center; gap:10px;
+  }
+  .logo .bracket{ color:var(--muted); }
+  .logo h1{ font-size:16px; color:var(--text); }
+  .logo h1 .accent{ color:var(--accent); }
+  .logo .tag{ color:var(--muted); font-size:11px; margin-left:6px; }
+
+  .base-url-wrap{
+    display:flex; align-items:center; gap:8px;
+    flex:1; min-width:240px; max-width:520px;
+  }
+  .base-url-wrap label{ color:var(--muted); font-size:11px; white-space:nowrap; }
+  .base-url-wrap input{
+    flex:1;
+    background:var(--panel-raised);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:7px 10px;
+    border-radius:var(--radius);
+    outline:none;
+  }
+  .base-url-wrap input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+
+  .status-pill{
+    display:flex; align-items:center; gap:6px;
+    font-size:11px; color:var(--muted);
+    padding:6px 10px;
+    border:1px solid var(--border);
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .dot{ width:7px; height:7px; border-radius:50%; background:var(--muted-dim); flex-shrink:0; }
+  .dot.up{ background:var(--accent); box-shadow:0 0 8px var(--accent); animation:pulse 2s infinite; }
+  .dot.down{ background:var(--error); box-shadow:0 0 8px var(--error); }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+  /* ── layout ─────────────────────────────────────────────── */
+  .shell{
+    display:grid;
+    grid-template-columns: 260px 1fr;
+    max-width:1280px;
+    margin:0 auto;
+    position:relative; z-index:1;
+  }
+  @media (max-width: 860px){
+    .shell{ grid-template-columns: 1fr; }
+  }
+
+  /* ── nav ────────────────────────────────────────────────── */
+  nav{
+    border-right:1px solid var(--border);
+    padding:20px 12px;
+    align-self:start;
+    position:sticky; top:57px;
+    max-height:calc(100vh - 57px);
+    overflow-y:auto;
+  }
+  @media (max-width: 860px){
+    nav{ position:static; max-height:none; border-right:none; border-bottom:1px solid var(--border); }
+  }
+  .nav-group{ margin-bottom:18px; }
+  .nav-group-label{
+    color:var(--muted-dim);
+    font-size:10px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    padding:0 10px 6px;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:8px;
+    padding:7px 10px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    color:var(--muted);
+    font-size:12.5px;
+    border-left:2px solid transparent;
+  }
+  .nav-item:hover{ background:var(--panel-raised); color:var(--text); }
+  .nav-item.active{
+    background:var(--panel-raised);
+    color:var(--accent);
+    border-left-color:var(--accent);
+  }
+  .nav-item .m{ font-size:9.5px; color:var(--muted-dim); width:28px; flex-shrink:0; }
+  .nav-item.active .m{ color:var(--accent-dim); }
+
+  /* ── main ───────────────────────────────────────────────── */
+  main{ padding:28px 24px 80px; min-width:0; }
+
+  .hero{
+    margin-bottom:32px;
+    padding-bottom:24px;
+    border-bottom:1px dashed var(--border);
+  }
+  .hero .prompt{ color:var(--accent); }
+  .hero h2{ font-size:22px; margin:6px 0 10px; }
+  .hero p{ color:var(--muted); margin:0; max-width:60ch; }
+  .hero .cursor{
+    display:inline-block; width:8px; height:16px; background:var(--accent);
+    vertical-align:middle; margin-left:4px;
+    animation:blink 1s step-end infinite;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  .endpoint-card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    margin-bottom:20px;
+    overflow:hidden;
+  }
+  .endpoint-head{
+    padding:16px 18px;
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .method{
+    font-family:'Space Mono', monospace;
+    font-weight:700;
+    font-size:11px;
+    color:var(--bg);
+    background:var(--accent);
+    padding:3px 8px;
+    border-radius:var(--radius);
+    flex-shrink:0;
+  }
+  .path{ color:var(--text); font-size:13.5px; word-break:break-all; }
+  .path .param{ color:var(--warn); }
+  .endpoint-desc{ padding:14px 18px 0; color:var(--muted); font-size:12.5px; }
+
+  .params-row{
+    display:flex; flex-wrap:wrap; gap:10px;
+    padding:14px 18px;
+  }
+  .param-field{ display:flex; flex-direction:column; gap:4px; flex:1; min-width:140px; }
+  .param-field label{ font-size:10.5px; color:var(--muted-dim); text-transform:uppercase; letter-spacing:0.06em; }
+  .param-field input{
+    background:var(--panel-raised);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:8px 10px;
+    border-radius:var(--radius);
+    outline:none;
+  }
+  .param-field input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+
+  .endpoint-actions{
+    display:flex; align-items:center; gap:10px;
+    padding:4px 18px 16px;
+  }
+  .run-btn{
+    background:var(--accent);
+    color:var(--bg);
+    border:none;
+    font-family:'Space Mono', monospace;
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:0.04em;
+    padding:9px 18px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    transition:transform 0.08s ease, box-shadow 0.15s ease;
+  }
+  .run-btn:hover{ box-shadow:0 0 16px var(--accent-glow); }
+  .run-btn:active{ transform:scale(0.97); }
+  .run-btn:disabled{ background:var(--muted-dim); color:var(--bg); cursor:wait; }
+  .run-hint{ color:var(--muted-dim); font-size:11px; }
+
+  .console{
+    border-top:1px solid var(--border-soft);
+    background:#080a09;
+  }
+  .console-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 18px;
+    font-size:10.5px; color:var(--muted-dim);
+    border-bottom:1px solid var(--border-soft);
+  }
+  .console-bar .dots{ display:flex; gap:5px; }
+  .console-bar .dots span{ width:8px; height:8px; border-radius:50%; background:var(--border); }
+  pre.console-body{
+    margin:0;
+    padding:14px 18px 18px;
+    max-height:340px;
+    overflow:auto;
+    font-size:12px;
+    color:var(--text);
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .console-body .req-line{ color:var(--muted); }
+  .console-body .req-line .arrow{ color:var(--accent); }
+  .console-body.empty{ color:var(--muted-dim); font-style:italic; }
+  .console-body .ok{ color:var(--accent); }
+  .console-body .fail{ color:var(--error); }
+  .console-body .status-tag{ font-weight:700; }
+
+  .json-key{ color:#8fb8ff; }
+  .json-str{ color:var(--accent); }
+  .json-num{ color:var(--warn); }
+  .json-bool{ color:#ff9ecf; }
+  .json-null{ color:var(--muted); }
+
+  footer{
+    border-top:1px solid var(--border);
+    padding:20px 24px 40px;
+    color:var(--muted-dim);
+    font-size:11px;
+    max-width:1280px; margin:0 auto;
+  }
+  footer .disclaimer{ max-width:70ch; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="bracket">[</span>
+    <h1>dramabox<span class="accent">.api</span></h1>
+    <span class="bracket">]</span>
+    <span class="tag">unofficial · docs & console</span>
+  </div>
+  <div class="base-url-wrap">
+    <label>base_url</label>
+    <input id="baseUrlInput" type="text" value="https://dramaboxapi-omega.vercel.app" spellcheck="false" />
+  </div>
+  <div class="status-pill" id="statusPill">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">checking...</span>
+  </div>
+</header>
+
+<div class="shell">
+  <nav id="nav"></nav>
+  <main>
+    <div class="hero">
+      <div class="prompt">aji@dramabox-api:~$ <span class="cursor"></span></div>
+      <h2>Scraper API + live console.</h2>
+      <p>Semua endpoint di bawah bisa langsung di-tes dari sini — request beneran ke deployment lu, response-nya tampil apa adanya, termasuk kalau error. Pilih endpoint di kiri, isi parameter kalau ada, terus tekan RUN.</p>
+    </div>
+    <div id="endpointContainer"></div>
+  </main>
+</div>
+
+<footer>
+  <div class="disclaimer">
+    Unofficial scraper — reverse-engineered dari API internal DramaBox untuk keperluan riset & pengembangan pribadi. Hak cipta konten (judul, gambar, video) tetap milik DramaBox / penyedia asli. Skema endpoint bisa berubah sewaktu-waktu mengikuti perubahan di sisi DramaBox.
+  </div>
+</footer>
+
+<script>
+const ENDPOINTS = [
+  { group: "System", method: "GET", path: "/", desc: "Info API & daftar endpoint yang tersedia.", params: [] },
+  { group: "System", method: "GET", path: "/health", desc: "Cek apakah scraper masih bisa nge-ping DramaBox.", params: [] },
+  { group: "System", method: "GET", path: "/proxy-status", desc: "Cek apakah request lagi diarahkan lewat proxy (PROXY_URL).", params: [] },
+
+  { group: "Discovery", method: "GET", path: "/latest", desc: "Drama terbaru yang di-update.", params: [{name:"page", default:"1"}] },
+  { group: "Discovery", method: "GET", path: "/trending", desc: "Drama yang lagi trending.", params: [] },
+  { group: "Discovery", method: "GET", path: "/vip", desc: "Daftar drama VIP.", params: [] },
+  { group: "Discovery", method: "GET", path: "/homepage", desc: "Gabungan latest + trending + recommended, kayak halaman utama app.", params: [] },
+  { group: "Discovery", method: "GET", path: "/recommended", desc: "Drama rekomendasi.", params: [] },
+  { group: "Discovery", method: "GET", path: "/categories", desc: "Daftar kategori/genre drama.", params: [{name:"page", default:"1"}, {name:"pageSize", default:"20"}] },
+  { group: "Discovery", method: "GET", path: "/category/:typeTwoId", desc: "Drama berdasarkan ID kategori tertentu.", params: [{name:"typeTwoId", default:"", isPath:true}, {name:"page", default:"1"}, {name:"pageSize", default:"20"}] },
+
+  { group: "Search", method: "GET", path: "/search", desc: "Cari drama berdasarkan keyword.", params: [{name:"q", default:"love"}, {name:"page", default:"1"}, {name:"pageSize", default:"20"}] },
+  { group: "Search", method: "GET", path: "/search/suggest", desc: "Saran pencarian berdasarkan keyword parsial.", params: [{name:"q", default:"love"}] },
+
+  { group: "Drama", method: "GET", path: "/detail/:bookId", desc: "Detail lengkap satu drama + rekomendasi terkait.", params: [{name:"bookId", default:"", isPath:true}] },
+  { group: "Drama", method: "GET", path: "/detail-v2/:bookId", desc: "Detail drama versi webfic API (field lebih lengkap).", params: [{name:"bookId", default:"", isPath:true}] },
+  { group: "Drama", method: "GET", path: "/chapters/:bookId", desc: "Daftar semua episode/chapter suatu drama.", params: [{name:"bookId", default:"", isPath:true}] },
+  { group: "Drama", method: "GET", path: "/episode/:bookId/:episodeIndex", desc: "Detail satu episode spesifik.", params: [{name:"bookId", default:"", isPath:true}, {name:"episodeIndex", default:"1", isPath:true}] },
+  { group: "Drama", method: "GET", path: "/stream/:bookId/:episode", desc: "URL streaming (mp4 & m3u8) untuk satu episode.", params: [{name:"bookId", default:"", isPath:true}, {name:"episode", default:"1", isPath:true}] },
+  { group: "Drama", method: "GET", path: "/batch/:bookId", desc: "Semua episode sekaligus, buat kebutuhan batch download.", params: [{name:"bookId", default:"", isPath:true}] },
+  { group: "Drama", method: "GET", path: "/related/:bookId", desc: "Drama lain yang mirip/berkaitan.", params: [{name:"bookId", default:"", isPath:true}] },
+];
+
+const nav = document.getElementById('nav');
+const container = document.getElementById('endpointContainer');
+const baseUrlInput = document.getElementById('baseUrlInput');
+
+const groups = {};
+ENDPOINTS.forEach((ep, i) => {
+  ep._id = 'ep-' + i;
+  if (!groups[ep.group]) groups[ep.group] = [];
+  groups[ep.group].push(ep);
+});
+
+// build nav
+Object.entries(groups).forEach(([groupName, eps]) => {
+  const groupDiv = document.createElement('div');
+  groupDiv.className = 'nav-group';
+  const label = document.createElement('div');
+  label.className = 'nav-group-label';
+  label.textContent = groupName;
+  groupDiv.appendChild(label);
+  eps.forEach(ep => {
+    const item = document.createElement('div');
+    item.className = 'nav-item';
+    item.dataset.target = ep._id;
+    item.innerHTML = `<span class="m">${ep.method}</span><span>${ep.path}</span>`;
+    item.addEventListener('click', () => {
+      document.getElementById(ep._id).scrollIntoView({ behavior:'smooth', block:'start' });
+      setActive(ep._id);
+    });
+    groupDiv.appendChild(item);
+  });
+  nav.appendChild(groupDiv);
+});
+
+function setActive(id){
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.target === id);
+  });
+}
+
+// build endpoint cards
+ENDPOINTS.forEach(ep => {
+  const card = document.createElement('div');
+  card.className = 'endpoint-card';
+  card.id = ep._id;
+
+  const pathHtml = ep.path.replace(/:([a-zA-Z0-9]+)/g, '<span class="param">:$1</span>');
+
+  card.innerHTML = `
+    <div class="endpoint-head">
+      <span class="method">${ep.method}</span>
+      <span class="path">${pathHtml}</span>
+    </div>
+    <div class="endpoint-desc">${ep.desc}</div>
+    <div class="params-row"></div>
+    <div class="endpoint-actions">
+      <button class="run-btn">RUN →</button>
+      <span class="run-hint"></span>
+    </div>
+    <div class="console">
+      <div class="console-bar">
+        <span>response</span>
+        <div class="dots"><span></span><span></span><span></span></div>
+      </div>
+      <pre class="console-body empty">// belum ada request. tekan RUN.</pre>
+    </div>
+  `;
+
+  const paramsRow = card.querySelector('.params-row');
+  const inputs = {};
+  ep.params.forEach(p => {
+    const field = document.createElement('div');
+    field.className = 'param-field';
+    field.innerHTML = `<label>${p.name}</label>`;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = p.default || '';
+    input.placeholder = p.isPath ? 'wajib diisi' : '(opsional)';
+    field.appendChild(input);
+    paramsRow.appendChild(field);
+    inputs[p.name] = { input, meta: p };
+  });
+  if (ep.params.length === 0) paramsRow.style.display = 'none';
+
+  const btn = card.querySelector('.run-btn');
+  const hint = card.querySelector('.run-hint');
+  const consoleBody = card.querySelector('.console-body');
+
+  btn.addEventListener('click', async () => {
+    let path = ep.path;
+    const query = [];
+    let missingPath = false;
+
+    ep.params.forEach(p => {
+      const val = inputs[p.name].input.value.trim();
+      if (p.isPath) {
+        if (!val) missingPath = true;
+        path = path.replace(':' + p.name, encodeURIComponent(val));
+      } else if (val) {
+        query.push(`${p.name}=${encodeURIComponent(val)}`);
+      }
+    });
+
+    if (missingPath) {
+      hint.textContent = 'isi dulu parameter wajib (path)';
+      hint.style.color = 'var(--error)';
+      return;
+    }
+    hint.textContent = '';
+
+    const base = baseUrlInput.value.trim().replace(/\/$/, '');
+    const url = base + path + (query.length ? '?' + query.join('&') : '');
+
+    btn.disabled = true;
+    btn.textContent = 'RUNNING...';
+    consoleBody.className = 'console-body';
+    consoleBody.innerHTML = `<span class="req-line"><span class="arrow">→</span> GET ${escapeHtml(url)}</span>\n\nmenunggu response...`;
+
+    const t0 = performance.now();
+    try {
+      const res = await fetch(url);
+      const text = await res.text();
+      const ms = Math.round(performance.now() - t0);
+      let pretty;
+      try {
+        const json = JSON.parse(text);
+        pretty = syntaxHighlight(JSON.stringify(json, null, 2));
+      } catch {
+        pretty = escapeHtml(text);
+      }
+      const statusClass = res.ok ? 'ok' : 'fail';
+      consoleBody.innerHTML =
+        `<span class="req-line"><span class="arrow">→</span> GET ${escapeHtml(url)}</span>\n` +
+        `<span class="${statusClass} status-tag">← ${res.status} ${res.statusText}</span> <span class="req-line">(${ms}ms)</span>\n\n` +
+        pretty;
+    } catch (err) {
+      consoleBody.innerHTML =
+        `<span class="req-line"><span class="arrow">→</span> GET ${escapeHtml(url)}</span>\n` +
+        `<span class="fail status-tag">← NETWORK ERROR</span>\n\n${escapeHtml(err.message)}`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'RUN →';
+    }
+  });
+
+  container.appendChild(card);
+});
+
+function escapeHtml(str){
+  return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function syntaxHighlight(json){
+  json = escapeHtml(json);
+  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false)\b|null|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
+    match => {
+      let cls = 'json-num';
+      if (/^"/.test(match)) {
+        cls = /:$/.test(match) ? 'json-key' : 'json-str';
+      } else if (/true|false/.test(match)) {
+        cls = 'json-bool';
+      } else if (/null/.test(match)) {
+        cls = 'json-null';
+      }
+      return `<span class="${cls}">${match}</span>`;
+    });
+}
+
+// health check on load
+async function checkStatus(){
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  const base = baseUrlInput.value.trim().replace(/\/$/, '');
+  try {
+    const res = await fetch(base + '/');
+    if (res.ok) {
+      dot.className = 'dot up';
+      text.textContent = 'online';
+    } else {
+      dot.className = 'dot down';
+      text.textContent = 'error ' + res.status;
+    }
+  } catch {
+    dot.className = 'dot down';
+    text.textContent = 'unreachable';
+  }
+}
+checkStatus();
+baseUrlInput.addEventListener('change', checkStatus);
+
+// scrollspy
+const cards = document.querySelectorAll('.endpoint-card');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) setActive(entry.target.id);
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+cards.forEach(c => observer.observe(c));
+</script>
+</body>
+</html>
