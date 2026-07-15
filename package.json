@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,9 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "@zhadev/dramabox": "^0.0.1",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "https-proxy-agent": "^9.1.0"
+    "axios": "^1.x.x",
+    "cors": "^2.x.x",
+    "dotenv": "^16.x.x",
+    "express": "^4.x.x",
+    "https-proxy-agent": "^7.x.x"
   }
 }
