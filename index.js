@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -8,6 +9,7 @@ const DramaboxScraper = require('@zhadev/dramabox').default;
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(__dirname)); // biar docs.html (dan static file lain) ke-serve otomatis
 
 const PORT = process.env.PORT || 3000;
 
@@ -50,8 +52,13 @@ const handle = (fn) => async (req, res) => {
   }
 };
 
-// Root - info API
+// Root - docs.html jadi halaman utama
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'docs.html'));
+});
+
+// Info API dipindah ke /api biar tetep bisa diakses
+app.get('/api', (req, res) => {
   res.json({
     success: true,
     name: 'DramaBox Unofficial API',
@@ -155,4 +162,5 @@ if (!process.env.VERCEL) {
 }
 
 module.exports = app;
-  
+
+    
